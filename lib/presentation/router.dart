@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zerow/presentation/screens/create_post.dart';
 import 'package:zerow/presentation/screens/home.dart';
 import 'package:zerow/presentation/screens/login.dart';
 
 import 'package:zerow/cubit/auth/auth_cubit.dart';
+import 'package:zerow/presentation/screens/ranklevel.dart';
 
 class AppRouter {
   AppRouter._();
@@ -21,16 +23,19 @@ class AppRouter {
         name: 'login',
         builder: (BuildContext context, GoRouterState state) => LoginPage(),
       ),
+      GoRoute(
+        path: '/create_post',
+        name: 'create_post',
+        builder: (BuildContext context, GoRouterState state) =>
+            CreatePostScreen(),
+      ),
+      GoRoute(
+        path: '/ranklevel',
+        name: 'ranklevel',
+        builder: (BuildContext context, GoRouterState state) => RankLevel(),
+      ),
     ],
-    initialLocation: '/login',
-
-    // redirect: (context, state) {
-    //   final authState = BlocProvider.of<AuthCubit>(context).state;
-    //   if (authState is Authenticated) {
-    //     return '/home';
-    //   }
-    //   return null;
-    // },
+    initialLocation: '/home',
 
   );
 
