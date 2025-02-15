@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:zero_waste_app/cubit/auth/auth_cubit.dart';
-import 'package:zero_waste_app/cubit/user/user_cubit.dart';
-import 'package:zero_waste_app/data/repository/auth_repository.dart';
-import 'package:zero_waste_app/data/repository/user_repository.dart';
-import 'package:zero_waste_app/presentation/router.dart';
+import 'package:zerow/cubit/auth/auth_cubit.dart';
+import 'package:zerow/cubit/user/user_cubit.dart';
+import 'package:zerow/data/repository/auth_repository.dart';
+import 'package:zerow/data/repository/user_repository.dart';
+import 'package:zerow/presentation/router.dart';
 
 void main() async {
 
