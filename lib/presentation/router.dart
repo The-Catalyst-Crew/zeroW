@@ -9,8 +9,8 @@ class AppRouter {
   static final GoRouter _router = GoRouter(
     routes: <RouteBase>[
       GoRoute(
-        path: '/',
-        name: 'root',
+        path: '/home',
+        name: 'home',
         builder: (BuildContext context, GoRouterState state) => Home(),
       ),
       GoRoute(
@@ -20,6 +20,8 @@ class AppRouter {
       ),
     ],
     initialLocation: '/login',
+
+
   );
 
   static GoRouter get router => _router;
