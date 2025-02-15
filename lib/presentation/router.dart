@@ -24,13 +24,13 @@ class AppRouter {
     ],
     initialLocation: '/login',
 
-    redirect: (context, state) {
-      final authState = BlocProvider.of<AuthCubit>(context).state;
-      if (authState is Authenticated) {
-        return '/home';
-      }
-      return null;
-    },
+    // redirect: (context, state) {
+    //   final authState = BlocProvider.of<AuthCubit>(context).state;
+    //   if (authState is Authenticated) {
+    //     return '/home';
+    //   }
+    //   return null;
+    // },
 
   );
 
