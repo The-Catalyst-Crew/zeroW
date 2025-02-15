@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zerow/presentation/screens/home.dart';
 import 'package:zerow/presentation/screens/login.dart';
+
+import 'package:zerow/cubit/auth/auth_cubit.dart';
 
 class AppRouter {
   AppRouter._();
@@ -21,6 +24,13 @@ class AppRouter {
     ],
     initialLocation: '/login',
 
+    redirect: (context, state) {
+      final authState = BlocProvider.of<AuthCubit>(context).state;
+      if (authState is Authenticated) {
+        return '/home';
+      }
+      return null;
+    },
 
   );
 
