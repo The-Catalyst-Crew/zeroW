@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zero_waste_app/presentation/screens/home.dart';
+import 'package:zerow/presentation/screens/home.dart';
 
 class AppRouter {
   AppRouter._();

@@ -9,6 +9,7 @@ import 'package:zerow/cubit/user/user_cubit.dart';
 import 'package:zerow/data/repository/auth_repository.dart';
 import 'package:zerow/data/repository/user_repository.dart';
 import 'package:zerow/presentation/router.dart';
+import 'package:zerow/firebase_options.dart';
 
 void main() async {
 
@@ -22,13 +23,13 @@ void main() async {
     ],
   );
 
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  // FirebaseAuth.instance.authStateChanges().listen((User? user) {
-  //   AppRouter.router.refresh();
-  // });
+  FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    AppRouter.router.refresh();
+  });
 
   final AuthRepository authRepository = AuthRepository();
   final UserRepository userRepository = UserRepository();

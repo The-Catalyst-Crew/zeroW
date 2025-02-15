@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:zero_waste_app/data/models/user_model.dart';
-import 'package:zero_waste_app/data/repository/auth_repository.dart';
-import 'package:zero_waste_app/data/repository/user_repository.dart';
+import 'package:zerow/data/models/user_model.dart';
+import 'package:zerow/data/repository/auth_repository.dart';
+import 'package:zerow/data/repository/user_repository.dart';
 
 part 'auth_state.dart';
 
