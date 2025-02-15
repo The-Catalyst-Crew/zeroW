@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class Home extends StatelessWidget {
   const Home({Key? key}) : super(key: key);
@@ -10,160 +11,228 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: theme.surface,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         title: Text(
           "zeroW",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: theme.onSurface,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w900,
+            color: colorScheme.onBackground,
+            letterSpacing: 1.2,
           ),
         ),
-        backgroundColor: theme.surface,
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              // Navigate to Profile Page
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(
+              backgroundColor: colorScheme.surfaceVariant,
+              child: IconButton(
+                icon: Icon(Icons.account_circle,
+                    color: colorScheme.onSurfaceVariant),
+                onPressed: () {
+                  // Navigate to Profile Page
+                },
+              ),
+            ),
           ),
-          const SizedBox(width: 16),
         ],
       ),
-      body: PageView.builder(
-        scrollDirection: Axis.vertical,
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border:
-                  Border.all(color: theme.onSurface.withOpacity(0.1), width: 1),
-              borderRadius: BorderRadius.circular(12),
-              color: theme.surfaceVariant,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Post Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: theme.primaryContainer,
-                          child: Icon(Icons.person,
-                              color: theme.onPrimaryContainer),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "User Name",
-                          style:
-                              TextStyle(color: theme.onSurface, fontSize: 16),
+      body: AnimationLimiter(
+        child: PageView.builder(
+          scrollDirection: Axis.vertical,
+          itemCount: 10,
+          itemBuilder: (context, index) {
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: const Duration(milliseconds: 500),
+              child: SlideAnimation(
+                verticalOffset: 50.0,
+                child: FadeInAnimation(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.surfaceVariant.withOpacity(0.7),
+                          colorScheme.surfaceVariant.withOpacity(0.5),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.onSurface.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: getStatus(index) == "Cleared"
-                            ? Colors.green.shade300
-                            : Colors.red.shade300,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        getStatus(index),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Post Content
-                Expanded(
-                  child: index == 0
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            "https://images.tribuneindia.com/cms/gall_content/2017/11/2017_11\$largeimg08_Wednesday_2017_004904874.jpg",
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  color: theme.primary,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Post Header
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor:
+                                        colorScheme.primaryContainer,
+                                    child: Icon(
+                                      Icons.person,
+                                      color: colorScheme.onPrimaryContainer,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    "User Name",
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: getStatus(index) == "Cleared"
+                                      ? Colors.green.shade200
+                                      : Colors.red.shade200,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Icon(
-                                  Icons.broken_image,
-                                  size: 50,
-                                  color: theme.onSurface.withOpacity(0.5),
+                                child: Text(
+                                  getStatus(index),
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
-                        )
-                      : Center(
-                          child: Text(
-                            "Post Will Appear Here",
-                            style: TextStyle(color: theme.onSurface),
+                          const SizedBox(height: 16),
+
+                          // Post Content
+                          Expanded(
+                            child: index == 0
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      "https://images.tribuneindia.com/cms/gall_content/2017/11/2017_11\$largeimg08_Wednesday_2017_004904874.jpg",
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            color: colorScheme.primary,
+                                            strokeWidth: 3,
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.broken_image,
+                                                size: 60,
+                                                color: colorScheme.onSurface
+                                                    .withOpacity(0.5),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                "Image Not Available",
+                                                style: theme
+                                                    .textTheme.bodyMedium
+                                                    ?.copyWith(
+                                                  color: colorScheme.onSurface
+                                                      .withOpacity(0.7),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : Center(
+                                    child: Text(
+                                      "Post Will Appear Here",
+                                      style:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        color: colorScheme.onSurface
+                                            .withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ),
                           ),
-                        ),
-                ),
 
-                const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                // Footer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.thumb_up, color: theme.onSurface),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.comment, color: theme.onSurface),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.share, color: theme.onSurface),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                    Text(
-                      "2h ago",
-                      style: TextStyle(
-                        color: theme.onSurface.withOpacity(0.6),
-                        fontSize: 12,
+                          // Footer
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.thumb_up,
+                                        color: colorScheme.primary),
+                                    onPressed: () {},
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.comment,
+                                        color: colorScheme.primary),
+                                    onPressed: () {},
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.share,
+                                        color: colorScheme.primary),
+                                    onPressed: () {},
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                "2h ago",
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
