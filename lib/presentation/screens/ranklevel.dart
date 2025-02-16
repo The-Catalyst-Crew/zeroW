@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zerow/data/models/user_model.dart';
+import 'package:zerow/data/repository/user_repository.dart';
 
-class RankLevel extends StatelessWidget {
+class RankLevel extends StatefulWidget {
   const RankLevel({Key? key}) : super(key: key);
+
+  @override
+  _RankLevelState createState() => _RankLevelState();
+}
+
+class _RankLevelState extends State<RankLevel> {
+  final UserRepository _userRepository = UserRepository();
+  UserModel? _currentUser;
+  List<UserModel> _topUsers = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   final List<Map<String, dynamic>> _achievementLevels = const [
     {
@@ -23,21 +37,219 @@ class RankLevel extends StatelessWidget {
     },
   ];
 
-  Future<List<Map<String, dynamic>>> _fetchTopUsers() async {
-    final usersSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .orderBy('points', descending: true)
-        .limit(10)
-        .get();
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
 
-    return usersSnapshot.docs.map((doc) {
-      final userData = doc.data();
-      return {
-        'name': userData['name'] ?? 'Anonymous',
-        'points': userData['points'] ?? 0,
-        'avatarUrl': userData['avatarUrl'] ?? '',
-      };
-    }).toList();
+  Future<void> _fetchUserData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      // Fetch current user
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        final userModel =
+            await _userRepository.getFirestoreUser(currentUser.uid);
+
+        // Fetch top users with ranking
+        final usersSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .orderBy('points', descending: true)
+            .get();
+
+        final topUsers = usersSnapshot.docs
+            .asMap()
+            .map((index, doc) {
+              final user = UserModel.fromFirestore(doc);
+              return MapEntry(
+                index,
+                user.copyWith(rank: index + 1),
+              );
+            })
+            .values
+            .toList()
+            .take(10)
+            .toList();
+
+        // Update user's rank
+        final currentUserRank =
+            topUsers.indexWhere((u) => u.id == currentUser.uid) + 1;
+        final updatedCurrentUser = userModel?.copyWith(rank: currentUserRank);
+
+        setState(() {
+          _currentUser = updatedCurrentUser;
+          _topUsers = topUsers;
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('No authenticated user');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load user data: ${e.toString()}';
+      });
+      print('User data fetching error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final int userPoints = _currentUser?.points ?? 0;
+    final String userLevel = _currentUser?.level ?? 'Beginner';
+    final int userRank = _currentUser?.rank ?? 0;
+
+    return Scaffold(
+      backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/home'),
+        ),
+        title: Text(
+          'Achievements',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w900,
+            color: colorScheme.onBackground,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh, color: colorScheme.onBackground),
+            onPressed: _fetchUserData,
+          ),
+        ],
+      ),
+      body: WillPopScope(
+        onWillPop: () async {
+          context.go('/home');
+          return false;
+        },
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _errorMessage!,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: Colors.red,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _fetchUserData,
+                          child: Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              Text(
+                                "Your Progress",
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onBackground,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+
+                              SizedBox(height: 16),
+                              Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        userLevel,
+                                        style: theme.textTheme.titleLarge
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.primary,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Rank #$userRank',
+                                        style:
+                                            theme.textTheme.bodyLarge?.copyWith(
+                                          color: colorScheme.onSurface
+                                              .withOpacity(0.7),
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Total Points: $userPoints',
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.onBackground,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // Achievement Levels
+                              ..._achievementLevels
+                                  .map((level) => _buildAchievementCard(
+                                      context, level, userPoints))
+                                  .toList(),
+                            ],
+                          ),
+                        ),
+
+                        // Top Users Ranking
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Top Users',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ..._topUsers
+                                  .map((user) => _buildUserRankCard(
+                                        context: context,
+                                        user: user,
+                                        rank: user.rank,
+                                      ))
+                                  .toList(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+      ),
+    );
   }
 
   Widget _buildAchievementCard(
@@ -120,271 +332,55 @@ class RankLevel extends StatelessWidget {
     );
   }
 
-  Widget _buildPodiumSpot({
-    required BuildContext context,
-    required Map<String, dynamic> user,
-    required int rank,
-    required double height,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    Color _getPodiumColor(int rank) {
-      switch (rank) {
-        case 1:
-          return Colors.yellow.shade600;
-        case 2:
-          return Colors.grey.shade400;
-        case 3:
-          return Colors.brown.shade300;
-        default:
-          return colorScheme.surfaceVariant;
-      }
-    }
-
-    final titles = ["Clean-up Champion", "Eco Warrior", "Trash Eliminator"];
-
-    return Expanded(
-      child: Column(
-        children: [
-          Container(
-            height: height,
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: _getPodiumColor(rank),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-            ),
-            child: Center(
-              child: CircleAvatar(
-                radius: 30,
-                backgroundImage:
-                    user['avatarUrl'] != null && user['avatarUrl'].isNotEmpty
-                        ? NetworkImage(user['avatarUrl'])
-                        : null,
-                child: user['avatarUrl'] == null || user['avatarUrl'].isEmpty
-                    ? Icon(Icons.person, color: colorScheme.onPrimary)
-                    : null,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            user['name'],
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onBackground,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            titles[rank - 1],
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onBackground.withOpacity(0.7),
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          Text(
-            '${user['points']} pts',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildUserRankCard({
     required BuildContext context,
-    required Map<String, dynamic> user,
+    required UserModel user,
     required int rank,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Card(
+      elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage:
-              user['avatarUrl'] != null && user['avatarUrl'].isNotEmpty
-                  ? NetworkImage(user['avatarUrl'])
-                  : null,
-          child: user['avatarUrl'] == null || user['avatarUrl'].isEmpty
+          backgroundImage: user.avatarUrl != null && user.avatarUrl.isNotEmpty
+              ? NetworkImage(user.avatarUrl)
+              : null,
+          child: user.avatarUrl == null || user.avatarUrl.isEmpty
               ? Icon(Icons.person, color: colorScheme.onPrimary)
               : null,
         ),
         title: Text(
-          user['name'],
+          user.name,
           style: theme.textTheme.bodyLarge,
         ),
-        trailing: Text(
-          '${user['points']} pts',
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.bold,
+        subtitle: Text(
+          user.level,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final int userPoints = 85; // Replace with dynamic user points
-
-    return Scaffold(
-      backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        title: Text(
-          'Achievements',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w900,
-            color: colorScheme.onBackground,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: CustomScrollView(
-        slivers: [
-          // Achievements List
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    "Your Progress",
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onBackground,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  ..._achievementLevels
-                      .map((level) =>
-                          _buildAchievementCard(context, level, userPoints))
-                      .toList(),
-
-                  // Total Points
-                  const SizedBox(height: 20),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Total Points: $userPoints',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${user.points} pts',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-
-          // Leaderboard Section
-          SliverToBoxAdapter(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _fetchTopUsers(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  );
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No users found',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  );
-                }
-
-                final topUsers = snapshot.data!;
-
-                return Column(
-                  children: [
-                    // Podium Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (topUsers.length > 1)
-                            _buildPodiumSpot(
-                              context: context,
-                              user: topUsers[1],
-                              rank: 2,
-                              height: 80,
-                            ),
-                          if (topUsers.isNotEmpty)
-                            _buildPodiumSpot(
-                              context: context,
-                              user: topUsers[0],
-                              rank: 1,
-                              height: 100,
-                            ),
-                          if (topUsers.length > 2)
-                            _buildPodiumSpot(
-                              context: context,
-                              user: topUsers[2],
-                              rank: 3,
-                              height: 70,
-                            ),
-                        ],
-                      ),
-                    ),
-
-                    // Leaderboard Title
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Top Performers',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onBackground,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-
-                    // User List
-                    ...topUsers
-                        .sublist(3)
-                        .asMap()
-                        .entries
-                        .map((entry) => _buildUserRankCard(
-                              context: context,
-                              user: entry.value,
-                              rank: entry.key + 4,
-                            ))
-                        .toList(),
-                  ],
-                );
-              },
+            Text(
+              'Rank #${user.rank}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

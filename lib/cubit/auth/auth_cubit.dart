@@ -29,7 +29,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-
   Future<void> signInWithEmail(String email, String password) async {
     try {
       emit(AuthLoading());
@@ -55,24 +54,16 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signUpWithGoogle() async {
-    try {
-      emit(AuthLoading());
-      final User? user = await _authRepository.signInWithGoogle();
-      await _userRepository.createUser(user);
-      emit(ApprovalRequestSent());
-    } catch (e) {
-      emit(AuthError("Signup failed: ${e.toString()}"));
-    }
-  }
-
   Future<void> signInWithGoogle() async {
     try {
       emit(AuthLoading());
       final User? user = await _authRepository.signInWithGoogle();
-      final UserModel? firestoreUser =
+      UserModel? firestoreUser =
           await _userRepository.getFirestoreUser(user!.uid);
-
+      if (firestoreUser == null) {
+        await _userRepository.createUser(user);
+        firestoreUser = await _userRepository.getFirestoreUser(user.uid);
+      }
       emit(Authenticated(firestoreUser));
     } catch (e) {
       emit(AuthError("Google sign-in failed: ${e.toString()}"));
