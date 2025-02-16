@@ -19,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showErrorMessage(String message) {
+    print(message);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -85,9 +86,11 @@ class _LoginPageState extends State<LoginPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          FlutterLogo(
-                            size: 120,
-                            style: FlutterLogoStyle.markOnly,
+                          Image.asset(
+                            'assets/zerow_logo.png', // Replace with your logo path
+                            height: 120,
+                            width: 120,
+                            fit: BoxFit.contain,
                           ),
                           const SizedBox(height: 32),
                           Text(
