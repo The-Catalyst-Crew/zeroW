@@ -17,6 +17,9 @@ class BottomNavBar extends StatelessWidget {
       case 2:
         context.go('/ranklevel');
         break;
+      case 3:
+        context.go('/profile');
+        break;
     }
   }
 
@@ -57,6 +60,11 @@ class BottomNavBar extends StatelessWidget {
           icon: Icon(Icons.leaderboard_outlined),
           activeIcon: Icon(Icons.leaderboard),
           label: 'Ranking',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profile',
         ),
       ],
     );

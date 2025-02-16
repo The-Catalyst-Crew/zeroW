@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:zerow/data/models/user_model.dart';
+import 'package:go_router/go_router.dart';
 
 class RankLevel extends StatelessWidget {
   const RankLevel({Key? key}) : super(key: key);
@@ -233,158 +234,170 @@ class RankLevel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final int userPoints = 85; // Replace with dynamic user points
 
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/home'),
+        ),
         title: Text(
           'Achievements',
-          style: theme.textTheme.titleLarge?.copyWith(
+          style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w900,
             color: colorScheme.onBackground,
+            letterSpacing: 1.2,
           ),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: CustomScrollView(
-        slivers: [
-          // Achievements List
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    "Your Progress",
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onBackground,
+      body: WillPopScope(
+        onWillPop: () async {
+          context.go('/home');
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            // Achievements List
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      "Your Progress",
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: colorScheme.onBackground,
+                        letterSpacing: 1.1,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  ..._achievementLevels
-                      .map((level) =>
-                          _buildAchievementCard(context, level, userPoints))
-                      .toList(),
+                    ..._achievementLevels
+                        .map((level) =>
+                            _buildAchievementCard(context, level, 85))
+                        .toList(),
 
-                  // Total Points
-                  const SizedBox(height: 20),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Total Points: $userPoints',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
+                    // Total Points
+                    const SizedBox(height: 20),
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      color: colorScheme.surfaceVariant,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'Total Points: 85',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Leaderboard Section
-          SliverToBoxAdapter(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _fetchTopUsers(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  );
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No users found',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  );
-                }
-
-                final topUsers = snapshot.data!;
-
-                return Column(
-                  children: [
-                    // Podium Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (topUsers.length > 1)
-                            _buildPodiumSpot(
-                              context: context,
-                              user: topUsers[1],
-                              rank: 2,
-                              height: 80,
-                            ),
-                          if (topUsers.isNotEmpty)
-                            _buildPodiumSpot(
-                              context: context,
-                              user: topUsers[0],
-                              rank: 1,
-                              height: 100,
-                            ),
-                          if (topUsers.length > 2)
-                            _buildPodiumSpot(
-                              context: context,
-                              user: topUsers[2],
-                              rank: 3,
-                              height: 70,
-                            ),
-                        ],
+            // Leaderboard Section
+            SliverToBoxAdapter(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _fetchTopUsers(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: colorScheme.primary,
                       ),
-                    ),
+                    );
+                  }
 
-                    // Leaderboard Title
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
                       child: Text(
-                        'Top Performers',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onBackground,
-                        ),
-                        textAlign: TextAlign.center,
+                        'No users found',
+                        style: theme.textTheme.titleMedium,
                       ),
-                    ),
+                    );
+                  }
 
-                    // User List
-                    ...topUsers
-                        .sublist(3)
-                        .asMap()
-                        .entries
-                        .map((entry) => _buildUserRankCard(
-                              context: context,
-                              user: entry.value,
-                              rank: entry.key + 4,
-                            ))
-                        .toList(),
-                  ],
-                );
-              },
+                  final topUsers = snapshot.data!;
+
+                  return Column(
+                    children: [
+                      // Podium Section
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (topUsers.length > 1)
+                              _buildPodiumSpot(
+                                context: context,
+                                user: topUsers[1],
+                                rank: 2,
+                                height: 80,
+                              ),
+                            if (topUsers.isNotEmpty)
+                              _buildPodiumSpot(
+                                context: context,
+                                user: topUsers[0],
+                                rank: 1,
+                                height: 100,
+                              ),
+                            if (topUsers.length > 2)
+                              _buildPodiumSpot(
+                                context: context,
+                                user: topUsers[2],
+                                rank: 3,
+                                height: 70,
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      // Leaderboard Title
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'Top Performers',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onBackground,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                      // User List
+                      ...topUsers
+                          .sublist(3)
+                          .asMap()
+                          .entries
+                          .map((entry) => _buildUserRankCard(
+                                context: context,
+                                user: entry.value,
+                                rank: entry.key + 4,
+                              ))
+                          .toList(),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

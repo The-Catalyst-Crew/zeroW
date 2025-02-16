@@ -109,10 +109,9 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 32),
                           ElevatedButton.icon(
-                            icon: Image.asset(
-                              'assets/images/google_logo.png',
-                              height: 24,
-                              width: 24,
+                            icon: Icon(
+                              Icons.login,
+                              color: colorScheme.onPrimary,
                             ),
                             label: Text(
                               _isLoading

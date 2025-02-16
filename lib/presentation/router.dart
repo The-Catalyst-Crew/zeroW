@@ -6,6 +6,8 @@ import 'package:zerow/presentation/screens/home.dart';
 import 'package:zerow/presentation/screens/login.dart';
 import 'package:zerow/cubit/auth/auth_cubit.dart';
 import 'package:zerow/presentation/screens/ranklevel.dart';
+import 'package:zerow/presentation/screens/my_profile.dart';
+import 'package:zerow/presentation/screens/settings.dart';
 
 class AppRouter {
   AppRouter._();
@@ -33,8 +35,18 @@ class AppRouter {
         name: 'ranklevel',
         builder: (BuildContext context, GoRouterState state) => RankLevel(),
       ),
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (BuildContext context, GoRouterState state) => MyProfile(),
+      ),
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (BuildContext context, GoRouterState state) => Settings(),
+      ),
     ],
-    initialLocation: '/home',
+    initialLocation: '/login',
   );
 
   static GoRouter get router => _router;
