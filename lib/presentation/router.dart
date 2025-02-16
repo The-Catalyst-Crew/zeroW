@@ -35,7 +35,6 @@ class AppRouter {
       ),
     ],
     initialLocation: '/home',
-
   );
 
   static GoRouter get router => _router;

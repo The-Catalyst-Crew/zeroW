@@ -160,146 +160,160 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        title: Text(
-          "Create Post",
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-            color: colorScheme.onBackground,
-            letterSpacing: 1.2,
+    return WillPopScope(
+      onWillPop: () async {
+        context.go('/home');
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: colorScheme.background,
+        appBar: AppBar(
+          title: Text(
+            "Create Post",
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: colorScheme.onBackground,
+              letterSpacing: 1.2,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              context.go('/home');
+            },
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: AnimationLimiter(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: AnimationConfiguration.staggeredList(
-              position: 0,
-              duration: const Duration(milliseconds: 500),
-              child: SlideAnimation(
-                verticalOffset: 50.0,
-                child: FadeInAnimation(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: LinearGradient(
-                        colors: [
-                          colorScheme.surfaceVariant.withOpacity(0.7),
-                          colorScheme.surfaceVariant.withOpacity(0.5),
+        body: AnimationLimiter(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: AnimationConfiguration.staggeredList(
+                position: 0,
+                duration: const Duration(milliseconds: 500),
+                child: SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          colors: [
+                            colorScheme.surfaceVariant.withOpacity(0.7),
+                            colorScheme.surfaceVariant.withOpacity(0.5),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.onSurface.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
                         ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.onSurface.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Image Selection
-                        GestureDetector(
-                          onTap: () => _showImageSourceDialog(),
-                          child: Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              color: colorScheme.surfaceVariant,
-                              borderRadius: BorderRadius.circular(12),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Image Selection
+                          GestureDetector(
+                            onTap: () => _showImageSourceDialog(),
+                            child: Container(
+                              height: 200,
+                              decoration: BoxDecoration(
+                                color: colorScheme.surfaceVariant,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: _imageFile != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.file(_imageFile!,
+                                          fit: BoxFit.cover),
+                                    )
+                                  : Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.camera_alt,
+                                            size: 50,
+                                            color: colorScheme.primary),
+                                        Text('Tap to select image',
+                                            style: theme.textTheme.bodyMedium),
+                                      ],
+                                    ),
                             ),
-                            child: _imageFile != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.file(_imageFile!,
-                                        fit: BoxFit.cover),
-                                  )
-                                : Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.camera_alt,
-                                          size: 50, color: colorScheme.primary),
-                                      Text('Tap to select image',
-                                          style: theme.textTheme.bodyMedium),
-                                    ],
-                                  ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // Location Button
-                        ElevatedButton.icon(
-                          onPressed: _getCurrentLocation,
-                          icon: Icon(Icons.location_on,
-                              color: _currentLocation != null
-                                  ? Colors.red
-                                  : colorScheme.onPrimary),
-                          label: Text(_currentLocation != null
-                              ? 'Location Captured'
-                              : 'Add Location'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.surfaceVariant,
-                            foregroundColor: colorScheme.onSurfaceVariant,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                          // Location Button
+                          ElevatedButton.icon(
+                            onPressed: _getCurrentLocation,
+                            icon: Icon(Icons.location_on,
+                                color: _currentLocation != null
+                                    ? Colors.red
+                                    : colorScheme.onPrimary),
+                            label: Text(_currentLocation != null
+                                ? 'Location Captured'
+                                : 'Add Location'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorScheme.surfaceVariant,
+                              foregroundColor: colorScheme.onSurfaceVariant,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // Title Input
-                        TextField(
-                          controller: _titleController,
-                          decoration: InputDecoration(
-                            labelText: 'Post Title',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                          // Title Input
+                          TextField(
+                            controller: _titleController,
+                            decoration: InputDecoration(
+                              labelText: 'Post Title',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // Context Input
-                        TextField(
-                          controller: _contextController,
-                          maxLines: 4,
-                          decoration: InputDecoration(
-                            labelText: 'Post Context',
-                            alignLabelWithHint: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                          // Context Input
+                          TextField(
+                            controller: _contextController,
+                            maxLines: 4,
+                            decoration: InputDecoration(
+                              labelText: 'Post Context',
+                              alignLabelWithHint: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // Create Post Button
-                        ElevatedButton(
-                          onPressed: _isLoading ? null : _createPost,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: colorScheme.onPrimary,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                          // Create Post Button
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _createPost,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            child: _isLoading
+                                ? CircularProgressIndicator(
+                                    color: colorScheme.onPrimary)
+                                : const Text('Create Post'),
                           ),
-                          child: _isLoading
-                              ? CircularProgressIndicator(
-                                  color: colorScheme.onPrimary)
-                              : const Text('Create Post'),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
