@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:zerow/common/widgets/app_bar.dart';
 
 class Home extends StatelessWidget {
   const Home({Key? key}) : super(key: key);
@@ -234,6 +235,7 @@ class Home extends StatelessWidget {
           },
         ),
       ),
+      bottomNavigationBar: BottomNavBar(currentIndex: 0),
     );
   }
 }
