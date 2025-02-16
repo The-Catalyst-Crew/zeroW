@@ -7,7 +7,7 @@ import 'package:zerow/presentation/screens/login.dart';
 import 'package:zerow/cubit/auth/auth_cubit.dart';
 import 'package:zerow/presentation/screens/ranklevel.dart';
 import 'package:zerow/presentation/screens/my_profile.dart';
-import 'package:zerow/presentation/screens/settings.dart';
+import 'package:zerow/presentation/screens/reports.dart';
 
 class AppRouter {
   AppRouter._();
@@ -41,12 +41,12 @@ class AppRouter {
         builder: (BuildContext context, GoRouterState state) => MyProfile(),
       ),
       GoRoute(
-        path: '/settings',
-        name: 'settings',
-        builder: (BuildContext context, GoRouterState state) => Settings(),
+        path: '/reports',
+        name: 'reports',
+        builder: (BuildContext context, GoRouterState state) => Report(),
       ),
     ],
-    initialLocation: '/login',
+    initialLocation: '/reports',
   );
 
   static GoRouter get router => _router;

@@ -91,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 32),
                           Text(
-                            'Welcome to ZeroW',
+                            'Welcome to zeroW',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.w900,
