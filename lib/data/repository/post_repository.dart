@@ -45,4 +45,36 @@ class PostRepository {
       rethrow;
     }
   }
+
+  Future<void> likePost(String postId, String userId) async {
+    try {
+      final postRef = _firestore.collection('posts').doc(postId);
+      await postRef.update({
+        'likes': FieldValue.arrayUnion([userId])
+      });
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  Future<void> unlikePost(String postId, String userId) async {
+    try {
+      final postRef = _firestore.collection('posts').doc(postId);
+      await postRef.update({
+        'likes': FieldValue.arrayRemove([userId])
+      });
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  Future<bool> isPostLikedByUser(String postId, String userId) async {
+    try {
+      final postDoc = await _firestore.collection('posts').doc(postId).get();
+      final postData = postDoc.data();
+      return postData?['likes']?.contains(userId) ?? false;
+    } catch (error) {
+      rethrow;
+    }
+  }
 }

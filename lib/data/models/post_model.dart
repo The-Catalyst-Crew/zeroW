@@ -9,6 +9,8 @@ class PostModel {
   final GeoPoint? location;
   final Timestamp createdAt;
   final String status;
+  final List<String> likes;
+  final String username;
 
   PostModel({
     required this.id,
@@ -19,6 +21,8 @@ class PostModel {
     this.location,
     required this.createdAt,
     this.status = 'pending',
+    this.likes = const [],
+    this.username = 'Anonymous',
   });
 
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
@@ -32,6 +36,8 @@ class PostModel {
       location: data['location'],
       createdAt: data['createdAt'] ?? Timestamp.now(),
       status: data['status'] ?? 'pending',
+      likes: List<String>.from(data['likes'] ?? []),
+      username: data['username'] ?? 'Anonymous',
     );
   }
 
@@ -44,6 +50,33 @@ class PostModel {
       'location': location,
       'createdAt': createdAt,
       'status': status,
+      'likes': likes,
+      'username': username,
     };
+  }
+
+  PostModel copyWith({
+    String? id,
+    String? title,
+    String? context,
+    String? imageUrl,
+    String? userId,
+    GeoPoint? location,
+    Timestamp? createdAt,
+    List<String>? likes,
+    String? username,
+  }) {
+    return PostModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      context: context ?? this.context,
+      imageUrl: imageUrl ?? this.imageUrl,
+      userId: userId ?? this.userId,
+      location: location ?? this.location,
+      createdAt: createdAt ?? this.createdAt,
+      status: this.status,
+      likes: likes ?? this.likes,
+      username: username ?? this.username,
+    );
   }
 }

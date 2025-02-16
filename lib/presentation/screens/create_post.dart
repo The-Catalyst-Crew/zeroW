@@ -8,6 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -62,6 +65,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       final position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
+      if (!mounted) return;
       setState(() {
         _currentLocation = position;
       });
@@ -72,15 +76,43 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
   }
 
-  Future<void> _createPost() async {
-    // Validate inputs
-    if (_imageFile == null) {
-      _showErrorSnackBar('Please select an image');
-      return;
-    }
+  Future<String?> _processImage(File imageFile) async {
+    try {
+      // Compress image
+      final compressedFile = await FlutterImageCompress.compressAndGetFile(
+        imageFile.absolute.path,
+        '${imageFile.path}_compressed.jpg',
+        quality: 50,
+        minWidth: 800,
+        minHeight: 800,
+      );
 
-    if (_titleController.text.isEmpty) {
-      _showErrorSnackBar('Please enter a post title');
+      if (compressedFile == null) {
+        _showErrorSnackBar('Image compression failed');
+        return null;
+      }
+
+      // Read compressed image bytes and encode to base64
+      final bytes = await compressedFile.readAsBytes();
+      final base64Image = base64Encode(bytes);
+
+      // Size validation
+      const maxBase64Size = 1 * 1024 * 1024; // 1MB limit
+      if (base64Image.length > maxBase64Size) {
+        _showErrorSnackBar('Image is too large after compression');
+        return null;
+      }
+
+      return base64Image;
+    } catch (e) {
+      _showErrorSnackBar('Image processing error: $e');
+      return null;
+    }
+  }
+
+  Future<void> _createPost() async {
+    if (_titleController.text.isEmpty || _contextController.text.isEmpty) {
+      _showErrorSnackBar('Please fill in all fields');
       return;
     }
 
@@ -89,55 +121,91 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     });
 
     try {
-      // Get current user
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         _showErrorSnackBar('User not authenticated');
         return;
       }
 
-      // Upload image to Firebase Storage
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('posts')
-          .child('${DateTime.now().toIso8601String()}_${user.uid}');
+      // Fetch user details to get username
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final userData = userDoc.data();
+      final username = userData?['anonymousPosting']
+          ? 'Anonymous'
+          : userData?['name'] ?? 'Anonymous';
 
-      await storageRef.putFile(_imageFile!);
-      final imageUrl = await storageRef.getDownloadURL();
+      String? base64Image;
+      if (_imageFile != null) {
+        base64Image = await _processImage(_imageFile!);
+      }
 
-      // Prepare post data
       final postData = {
-        'userId': user.uid,
-        'userName': user.displayName ?? 'Anonymous',
         'title': _titleController.text,
         'context': _contextController.text,
-        'imageUrl': imageUrl,
+        'imageData': base64Image,
+        'userId': user.uid,
+        'username': username,
         'location': _currentLocation != null
             ? {
                 'latitude': _currentLocation!.latitude,
-                'longitude': _currentLocation!.longitude
+                'longitude': _currentLocation!.longitude,
               }
             : null,
         'timestamp': FieldValue.serverTimestamp(),
-        'status': 'Not Cleared', // Default status
+        'status': 'Not Cleared',
       };
 
-      // Save to Firestore
+      // Create post
       await FirebaseFirestore.instance.collection('posts').add(postData);
 
-      // Reset and navigate
-      _showSuccessSnackBar('Post created successfully!');
+      // Update user points
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'points': FieldValue.increment(20),
+      });
+
+      if (!mounted) return;
+      _showSuccessSnackBar('Post created successfully! +20 points');
       context.go('/home');
     } catch (e) {
       _showErrorSnackBar('Post creation failed: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  static Widget decodeBase64Image(String base64Image,
+      {BoxFit fit = BoxFit.cover}) {
+    try {
+      // Decode base64 to Uint8List
+      final decodedBytes = base64Decode(base64Image);
+
+      // Create image from memory
+      return Image.memory(
+        decodedBytes,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) {
+          print('Image decoding error: $error');
+          return Icon(Icons.broken_image, color: Colors.red);
+        },
+      );
+    } catch (e) {
+      print('Base64 decoding error: $e');
+      return Icon(Icons.error, color: Colors.red);
     }
   }
 
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -147,11 +215,43 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.green.shade300,
       ),
+    );
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -322,37 +422,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _showImageSourceDialog() {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Take a Photo'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Choose from Gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 

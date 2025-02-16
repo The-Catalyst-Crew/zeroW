@@ -149,148 +149,57 @@ class MyProfile extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           SizedBox(height: 24),
-                          ElevatedButton(
-                            onPressed: () => _showLogoutConfirmDialog(context),
-                            child: Text('Logout'),
-                          ),
-                          SizedBox(height: 24),
-
-                          // Rank and Level Section
-                          Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            color: Theme.of(context).colorScheme.surfaceVariant,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Rank and Level",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 1.1,
-                                        ),
-                                  ),
-                                  SizedBox(height: 16),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Text(
-                                            "Rank",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.7),
-                                                ),
-                                          ),
-                                          Text(
-                                            "Silver",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleSmall
-                                                ?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      // Badge in the middle
-                                      CircleAvatar(
-                                        radius: 30,
-                                        backgroundColor: Theme.of(context)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SwitchListTile(
+                                title: Text(
+                                  'Anonymous Posting',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                                subtitle: Text(
+                                  'Hide your name when creating posts',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                value: state.userModel.anonymousPosting,
+                                onChanged: (_) => context
+                                    .read<UserCubit>()
+                                    .toggleAnonymousPosting(),
+                                activeColor:
+                                    Theme.of(context).colorScheme.primary,
+                              ),
+                              SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () => context.push('/reports'),
+                                icon: Icon(
+                                  Icons.report_outlined,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                                label: Text(
+                                  'View My Reports',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
                                             .colorScheme
-                                            .primary
-                                            .withOpacity(0.2),
-                                        child: Icon(
-                                          Icons.military_tech_outlined,
-                                          size: 40,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
+                                            .onPrimary,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            "Level",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.7),
-                                                ),
-                                          ),
-                                          Text(
-                                            "5",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleSmall
-                                                ?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 32, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-
-                          SizedBox(height: 24),
-
-                          // Reports Button
-                          ElevatedButton.icon(
-                            onPressed: () => context.push('/reports'),
-                            icon: Icon(
-                              Icons.report_outlined,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                            label: Text(
-                              'View My Reports',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 16,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
