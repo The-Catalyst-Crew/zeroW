@@ -46,7 +46,7 @@ class AppRouter {
         builder: (BuildContext context, GoRouterState state) => Report(),
       ),
     ],
-    initialLocation: '/reports',
+    initialLocation: '/login',
   );
 
   static GoRouter get router => _router;

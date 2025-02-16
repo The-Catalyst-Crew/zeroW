@@ -19,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showErrorMessage(String message) {
+    print(message);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
