@@ -4,6 +4,7 @@ import 'package:zerow/data/eco_facts.dart'; // Import the eco facts list
 class DailyFactHelper {
   // Key for storing the last displayed fact index
   static const String _lastFactIndexKey = 'last_fact_index';
+
   // Key for storing the last displayed date
   static const String _lastDisplayDateKey = 'last_display_date';
 
@@ -13,7 +14,9 @@ class DailyFactHelper {
 
     // Get the last displayed date
     final lastDisplayDate = prefs.getString(_lastDisplayDateKey);
-    final currentDate = DateTime.now().toIso8601String().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    final currentDate = DateTime.now()
+        .toIso8601String()
+        .split('T')[0]; // Get today's date in YYYY-MM-DD format
 
     // Check if the last displayed date is today
     if (lastDisplayDate == currentDate) {
@@ -22,9 +25,12 @@ class DailyFactHelper {
       return ecoFacts[lastFactIndex];
     } else {
       // If it's a new day, show a new fact
-      final randomFactIndex = DateTime.now().day % ecoFacts.length; // Use day of the month to get a fact
-      await prefs.setInt(_lastFactIndexKey, randomFactIndex); // Save the new fact index
-      await prefs.setString(_lastDisplayDateKey, currentDate); // Save today's date
+      final randomFactIndex = DateTime.now().day %
+          ecoFacts.length; // Use day of the month to get a fact
+      await prefs.setInt(
+          _lastFactIndexKey, randomFactIndex); // Save the new fact index
+      await prefs.setString(
+          _lastDisplayDateKey, currentDate); // Save today's date
       return ecoFacts[randomFactIndex];
     }
   }

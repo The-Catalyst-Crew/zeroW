@@ -8,7 +8,8 @@ class AuthRepository {
   User? get currentUser => _auth.currentUser;
 
   Future<User?> signInWithEmail(String email, String password) async {
-    final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+    final UserCredential userCredential =
+        await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
@@ -16,7 +17,8 @@ class AuthRepository {
   }
 
   Future<User?> signUpWithEmail(String email, String password) async {
-    final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+    final UserCredential userCredential =
+        await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
@@ -25,15 +27,16 @@ class AuthRepository {
 
   Future<User?> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
     final OAuthCredential authCredential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
-    final UserCredential userCredential = await _auth.signInWithCredential(authCredential);
+    final UserCredential userCredential =
+        await _auth.signInWithCredential(authCredential);
     return userCredential.user;
   }
-
 
   Future<void> signOut() async {
     await _auth.signOut();

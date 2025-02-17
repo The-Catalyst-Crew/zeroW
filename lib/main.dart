@@ -8,12 +8,10 @@ import 'package:zerow/cubit/auth/auth_cubit.dart';
 import 'package:zerow/cubit/user/user_cubit.dart';
 import 'package:zerow/data/repository/auth_repository.dart';
 import 'package:zerow/data/repository/user_repository.dart';
-import 'package:zerow/presentation/router.dart';
 import 'package:zerow/firebase_options.dart';
+import 'package:zerow/presentation/router.dart';
 
 void main() async {
-
-
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
     [
@@ -36,7 +34,7 @@ void main() async {
 
   runApp(
     MultiBlocProvider(
-   providers: [
+      providers: [
         BlocProvider(
           create: (context) => AuthCubit(authRepository, userRepository),
         ),

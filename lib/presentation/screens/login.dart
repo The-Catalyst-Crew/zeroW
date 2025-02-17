@@ -87,7 +87,8 @@ class _LoginPageState extends State<LoginPage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Image.asset(
-                            'assets/zerow_logo.png', // Replace with your logo path
+                            'assets/zerow_logo.png',
+                            // Replace with your logo path
                             height: 120,
                             width: 120,
                             fit: BoxFit.contain,

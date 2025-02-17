@@ -84,7 +84,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 elevation: 2,
                 color: colorScheme.surfaceVariant,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                   child: TextField(
                     controller: _usernameController,
                     style: theme.textTheme.bodyLarge?.copyWith(
@@ -108,7 +109,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 elevation: 2,
                 color: colorScheme.surfaceVariant,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                   child: TextField(
                     controller: _bioController,
                     maxLines: 3,
@@ -132,7 +134,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

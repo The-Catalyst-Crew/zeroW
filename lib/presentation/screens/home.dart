@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:zerow/common/widgets/app_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zerow/common/widgets/app_bar.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
